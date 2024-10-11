@@ -22,7 +22,8 @@ default: &default
 
 development:
   <<: *default
-  database: pulmo_rehab_api_development
+  database: pulmo_rehab_dev
+  host: localhost
 
   # The specified database role being used to connect to PostgreSQL.
   # To create additional roles in PostgreSQL see `$ createuser --help`.
@@ -56,7 +57,7 @@ development:
 # Do not set this db to the same as development or production.
 test:
   <<: *default
-  database: pulmo_rehab_api_test
+  database: pulmo_rehab_test
 
 # As with config/credentials.yml, you never want to store sensitive information,
 # like your database password, in your source code. If your source code is
@@ -80,6 +81,6 @@ test:
 #
 production:
   <<: *default
-  database: pulmo_rehab_api_production
-  username: pulmo_rehab_api
-  password: <%= ENV["PULMO_REHAB_API_DATABASE_PASSWORD"] %>
+  database: pulmo_rehab_prod
+  username: pulmo_rehab
+  password: <%= ENV["PULMO_REHAB_DATABASE_PASSWORD"] %>
