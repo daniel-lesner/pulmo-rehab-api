@@ -40,4 +40,4 @@ group :development, :test do
   gem "rubocop-rails-omakase", require: false
 end
 
-
+gem "jsonapi-resources", "~> 0.10.7"

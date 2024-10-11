@@ -97,6 +97,10 @@ GEM
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
     json (2.7.2)
+    jsonapi-resources (0.10.7)
+      activerecord (>= 4.1)
+      concurrent-ruby
+      railties (>= 4.1)
     language_server-protocol (3.17.0.3)
     logger (1.6.1)
     loofah (2.22.0)
@@ -242,6 +246,7 @@ DEPENDENCIES
   bootsnap
   brakeman
   debug
+  jsonapi-resources (~> 0.10.7)
   pg (~> 1.1)
   puma (>= 5.0)
   rails (~> 7.2.1)
