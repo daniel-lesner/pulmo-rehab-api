@@ -7,4 +7,8 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "posts#index"
+
+  api_version(module: "V1", path: { value: "api/v1" }) do
+    jsonapi_resources :users, only: [ :create ]
+  end
 end
