@@ -42,3 +42,4 @@ end
 
 gem "jsonapi-resources", "~> 0.10.7"
 gem "csv", "~> 3.3"
+gem "versionist", "~> 2.0"

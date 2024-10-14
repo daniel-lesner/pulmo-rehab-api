@@ -231,10 +231,15 @@ GEM
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.6.0)
     useragent (0.16.10)
+    versionist (2.0.1)
+      activesupport (>= 3)
+      railties (>= 3)
+      yard (~> 0.9.20)
     webrick (1.8.2)
     websocket-driver (0.7.6)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
+    yard (0.9.37)
     zeitwerk (2.7.0)
 
 PLATFORMS
@@ -257,6 +262,7 @@ DEPENDENCIES
   rails (~> 7.2.1)
   rubocop-rails-omakase
   tzinfo-data
+  versionist (~> 2.0)
 
 BUNDLED WITH
    2.5.16
