@@ -38,8 +38,11 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+
+  gem "byebug", "~> 11.1"
 end
 
 gem "jsonapi-resources", "~> 0.10.7"
 gem "csv", "~> 3.3"
 gem "versionist", "~> 2.0"
+gem "pundit", "~> 2.4"
