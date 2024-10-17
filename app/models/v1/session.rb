@@ -2,6 +2,6 @@
 
 module V1
   class Session < VirtualRecord
-    attr_accessor :id, :email, :password, :password_token
+    attr_accessor :id, :user_id, :email, :password, :password_token
   end
 end
