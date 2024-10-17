@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-class ApplicationController < JSONAPI::ResourceController
+class ApplicationController < ActionController::Base
+  include JSONAPI::ActsAsResourceController
   include Pundit::Authorization
 
   # Prevent CSRF attacks by raising an exception.
@@ -8,16 +9,18 @@ class ApplicationController < JSONAPI::ResourceController
   protect_from_forgery with: :null_session
 
   before_action :authenticate_user
+
   rescue_from Pundit::NotAuthorizedError, with: :forbidden_error
+  rescue_from ActiveRecord::RecordNotFound, with: :not_found_error
 
   def show
     record = get_model_from_request.find(request.params[:id])
-    authorize record
+    authorize(record)
     super
   end
 
   def create
-    authorize get_model_from_request
+    authorize(get_model_from_request)
     super
   end
 
@@ -55,7 +58,7 @@ class ApplicationController < JSONAPI::ResourceController
           ]
         }
 
-      render json: body, status: :unauthorized
+      render(json: body, status: :unauthorized)
     end
 
     def forbidden_error
@@ -70,6 +73,23 @@ class ApplicationController < JSONAPI::ResourceController
         ]
       }
 
-      render json: body, status: :forbidden
+      render(json: body, status: :forbidden)
+    end
+
+    def not_found_error
+      id = request.parameters[:id]
+
+      body = {
+        errors: [
+          {
+            status: "404",
+            code: "404",
+            title: "Record not found",
+            details: "The record identified by #{id} could not be found."
+          }
+        ]
+      }
+
+      render(json: body, status: :not_found)
     end
 end
