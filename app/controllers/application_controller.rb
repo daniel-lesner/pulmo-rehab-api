@@ -20,7 +20,16 @@ class ApplicationController < ActionController::Base
   end
 
   def create
-    authorize(get_model_from_request)
+    user_id = request.params["data"]["relationships"]["user"]["data"]["id"]
+    record = get_model_from_request.new(user_id: user_id)
+
+    authorize(record)
+    super
+  end
+
+  def destroy
+    record = get_model_from_request.find(request.params[:id])
+    authorize(record)
     super
   end
 

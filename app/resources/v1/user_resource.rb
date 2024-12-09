@@ -6,6 +6,8 @@ module V1
 
     attributes :name, :email, :password, :password_token, :password_token_expires_at
 
+    has_many :bracelets
+
     def fetchable_fields
       super - [ :password ]
     end
