@@ -7,7 +7,7 @@ module V1
     end
 
     def create?
-      user.present? && (record.user.id == user.id)
+      true
     end
 
     def index?

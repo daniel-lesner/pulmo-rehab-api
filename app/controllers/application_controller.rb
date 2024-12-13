@@ -13,6 +13,10 @@ class ApplicationController < ActionController::Base
   rescue_from Pundit::NotAuthorizedError, with: :forbidden_error
   rescue_from ActiveRecord::RecordNotFound, with: :not_found_error
 
+  def context
+    { current_user: current_user }
+  end
+
   def show
     record = get_model_from_request.find(request.params[:id])
     authorize(record)
