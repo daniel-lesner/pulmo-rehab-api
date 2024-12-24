@@ -46,3 +46,5 @@ gem "jsonapi-resources", "~> 0.10.7"
 gem "csv", "~> 3.3"
 gem "versionist", "~> 2.0"
 gem "pundit", "~> 2.4"
+
+gem "net-http", "~> 0.6.0"
