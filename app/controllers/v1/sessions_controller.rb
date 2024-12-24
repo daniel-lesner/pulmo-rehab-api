@@ -8,7 +8,9 @@ module V1
       email = params["data"]["attributes"]["email"]
       password = params["data"]["attributes"]["password"]
 
-      if V1::User.find_by("email": email, password: password).nil?
+      user = V1::User.find_by("email": email, password: password) || V1::Doctor.find_by("email": email, password: password)
+
+      if user.nil?
         return render json: {
           errors: [
               {
