@@ -10,7 +10,7 @@ Rails.application.routes.draw do
 
   api_version(module: "V1", path: { value: "api/v1" }) do
     jsonapi_resources :sessions, only: [ :create ]
-    jsonapi_resources :users, only: [ :create, :show ]
+    jsonapi_resources :users, only: [ :create, :show, :index, :update, :destroy ]
     jsonapi_resources :doctors, only: [ :create, :show ]
     jsonapi_resources :bracelets, only: [ :create, :show, :index, :destroy ]
   end

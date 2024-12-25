@@ -39,7 +39,7 @@ class ApplicationController < ActionController::Base
     def authenticate_user
       token = request.headers["Authorization"]&.split(" ")&.last
 
-      user = V1::User.find_by(password_token: token) ||  V1::Doctor.find_by(password_token: token)
+      user = V1::User.find_by(password_token: token) || V1::Doctor.find_by(password_token: token)
 
       if user
         @current_user = user

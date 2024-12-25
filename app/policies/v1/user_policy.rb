@@ -9,5 +9,9 @@ module V1
     def create?
       true
     end
+
+    def destroy?
+      record.doctor_id == user.id
+    end
   end
 end

@@ -16,6 +16,10 @@ module V1
 
     private
       def registration_key_validity
+        # unless @registration_key == ENV["REGISTRATION_KEY"]
+        unless @registration_key == "7fh57dk28rf73hdk"
+          errors.add(:registration_key, "Invalid registration key")
+        end
       end
 
       def set_password_token
