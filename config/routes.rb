@@ -13,5 +13,6 @@ Rails.application.routes.draw do
     jsonapi_resources :users, only: [ :create, :show, :index, :update, :destroy ]
     jsonapi_resources :doctors, only: [ :create, :show ]
     jsonapi_resources :bracelets, only: [ :create, :show, :index, :destroy ]
+    jsonapi_resources :dashboards, only: [ :create ]
   end
 end
