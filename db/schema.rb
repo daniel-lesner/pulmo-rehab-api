@@ -10,18 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_12_23_134723) do
+ActiveRecord::Schema[7.2].define(version: 2024_12_25_104144) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "bracelets", force: :cascade do |t|
     t.string "name"
     t.string "brand"
-    t.string "api_key"
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "model"
+    t.string "token"
+    t.string "token_secret"
     t.index ["user_id"], name: "index_bracelets_on_user_id"
   end
 
@@ -44,6 +45,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_23_134723) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "doctor_id"
+    t.string "api_key"
     t.index ["doctor_id"], name: "index_users_on_doctor_id"
   end
 
