@@ -4,7 +4,7 @@ module V1
   class BraceletResource < ApplicationResource
     model_name "V1::Bracelet"
 
-    attributes :name, :brand, :model, :api_key
+    attributes :name, :brand, :model, :token, :token_secret
 
     has_one :user
 
