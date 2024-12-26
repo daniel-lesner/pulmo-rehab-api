@@ -90,6 +90,7 @@ GEM
     debug (1.9.2)
       irb (~> 1.10)
       reline (>= 0.3.8)
+    dotenv (3.1.7)
     drb (2.2.1)
     erubi (1.13.0)
     globalid (1.2.1)
@@ -264,6 +265,7 @@ DEPENDENCIES
   byebug (~> 11.1)
   csv (~> 3.3)
   debug
+  dotenv (~> 3.1)
   jsonapi-resources (~> 0.10.7)
   net-http (~> 0.6.0)
   pg (~> 1.5.6)

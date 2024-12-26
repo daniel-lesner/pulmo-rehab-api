@@ -40,6 +40,7 @@ group :development, :test do
   gem "rubocop-rails-omakase", require: false
 
   gem "byebug", "~> 11.1"
+  gem "dotenv", "~> 3.1"
 end
 
 gem "jsonapi-resources", "~> 0.10.7"
