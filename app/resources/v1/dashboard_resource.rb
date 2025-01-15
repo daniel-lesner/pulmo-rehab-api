@@ -4,7 +4,7 @@ module V1
   class DashboardResource < PoroResource
     model_name "V1::Dashboard"
 
-    attributes :bracelet_id, :bracelet_type, :date, :data_type, :data
+    attributes :bracelet_id, :bracelet_type, :date, :data_type, :data, :time_interval_in_minutes
 
     def fetchable_fields
       super - [ :password ]
@@ -18,6 +18,7 @@ module V1
       service = GarminService.new(
         metric: data_type,
         date: searched_date,
+        time_interval_in_minutes: time_interval_in_minutes,
         token: bracelet.token,
         token_secret: bracelet.token_secret,
       )

@@ -4,8 +4,9 @@ class GarminService
   PATH_MAPPING = {
     "heartRate" => "dailies"
   }
-  def initialize(metric:, date:, token:, token_secret:)
+  def initialize(metric:, date:, time_interval_in_minutes:, token:, token_secret:)
     @api_base_url = "https://apis.garmin.com/wellness-api/rest/#{PATH_MAPPING[metric]}".freeze
+    @time_interval_in_minutes = time_interval_in_minutes
     @consumer_key = ENV["GARMIN_CONSUMER_KEY"]
     @consumer_secret = ENV["GARMIN_CONSUMER_SECRET"]
     @token = token
@@ -17,7 +18,7 @@ class GarminService
   def call
     searched_date = Time.at(@end_time).strftime("%Y-%m-%d")
 
-    while @end_time < Time.now.to_i
+    while @end_time < (Time.now + 1.day).to_i
       query_params = {
         "uploadStartTimeInSeconds" => @start_time,
         "uploadEndTimeInSeconds" => @end_time
@@ -47,7 +48,7 @@ class GarminService
     .max_by { |entry| entry["timeOffsetHeartRateSamples"].size }
 
     if result
-      calculate_hourly_heart_rate(result)
+      calculate_interval_heart_rate(result, @time_interval_in_minutes)
     else
       []
     end
@@ -55,39 +56,32 @@ class GarminService
 
   private
 
-    def calculate_hourly_heart_rate(data)
-      seconds_in_hour = 3600
+    def calculate_interval_heart_rate(data, interval)
+      return generate_empty_ranges(interval) if data["timeOffsetHeartRateSamples"].empty?
 
-      hourly_averages = Hash.new(0)
+      interval_in_seconds = interval.to_i * 60
+      sums = Hash.new { |h, k| h[k] = { sum: 0, count: 0 } }
+      data["timeOffsetHeartRateSamples"].each { |offset, rate| idx = offset.to_i / interval_in_seconds; sums[idx][:sum] += rate; sums[idx][:count] += 1 }
+      max_index = (24 * 60) / interval.to_i - 1
 
-      heart_rate_samples = data["timeOffsetHeartRateSamples"]
-
-      return (0..23).each_with_object({}) do |hour, hash|
-        range_key = "#{hour}-#{hour + 1}:00"
-        hash[range_key] = 0
-      end if heart_rate_samples.empty?
-
-      hourly_sums = Hash.new { |hash, key| hash[key] = { sum: 0, count: 0 } }
-
-      heart_rate_samples.each do |time_offset, heart_rate|
-        hour = time_offset.to_i / seconds_in_hour
-
-        hourly_sums[hour][:sum] += heart_rate
-        hourly_sums[hour][:count] += 1
+      (0..max_index).each_with_object({}) do |i, hash|
+        start_h, start_m = (i * interval.to_i).divmod(60)
+        end_h,   end_m   = ((i + 1) * interval.to_i).divmod(60)
+        label            = "#{start_h}:#{start_m.to_s.rjust(2, '0')}-#{end_h}:#{end_m.to_s.rjust(2, '0')}"
+        c                = sums[i][:count]
+        hash[label]      = c > 0 ? (sums[i][:sum].to_f / c).round(2) : 0
       end
-
-      (0..23).each do |hour|
-        range_key = "#{hour}-#{hour + 1}:00"
-        if hourly_sums[hour][:count] > 0
-          hourly_averages[range_key] = (hourly_sums[hour][:sum].to_f / hourly_sums[hour][:count]).round(2)
-        else
-          hourly_averages[range_key] = 0
-        end
-      end
-
-      hourly_averages
     end
 
+    def generate_empty_ranges(interval)
+      max_index = (24 * 60) / interval.to_i - 1
+
+      (0..max_index).each_with_object({}) do |i, hash|
+        start_h, start_m = (i * interval.to_i).divmod(60)
+        end_h,   end_m   = ((i + 1) * interval.to_i).divmod(60)
+        hash["#{start_h}:#{start_m.to_s.rjust(2, '0')}-#{end_h}:#{end_m.to_s.rjust(2, '0')}"] = 0
+      end
+    end
 
     def generate_oauth_params
       {
