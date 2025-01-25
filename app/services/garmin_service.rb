@@ -3,12 +3,20 @@
 class GarminService
   PATH_MAPPING = {
     "heartRate" => "dailies",
-    "spo2" => "pulseOx"
+    "hrv" => "hrv",
+    "spo2" => "pulseOx",
+    "respiration" => "respiration",
+    "stress" => "stressDetails",
+    "bodyBatteryLevel" => "stressDetails"
   }
 
   DATA_COLUMN_NAME_MAPPING = {
     "heartRate" => "timeOffsetHeartRateSamples",
-    "spo2" => "timeOffsetSpo2Values"
+    "hrv" => "hrvValues",
+    "spo2" => "timeOffsetSpo2Values",
+    "respiration" => "timeOffsetEpochToBreaths",
+    "stress" => "timeOffsetStressLevelValues",
+    "bodyBatteryLevel" => "timeOffsetBodyBatteryValues"
   }
 
   def initialize(metric:, date:, time_interval_in_minutes:, token:, token_secret:)
@@ -69,7 +77,14 @@ class GarminService
 
       interval_in_seconds = interval.to_i * 60
       sums = Hash.new { |h, k| h[k] = { sum: 0, count: 0 } }
-      data[@data_column_name].each { |offset, rate| idx = offset.to_i / interval_in_seconds; sums[idx][:sum] += rate; sums[idx][:count] += 1 }
+
+      data[@data_column_name].each do |offset, rate|
+        next if rate <= 0
+        idx = offset.to_i / interval_in_seconds
+        sums[idx][:sum] += rate
+        sums[idx][:count] += 1
+      end
+
       max_index = (24 * 60) / interval.to_i - 1
 
       (0..max_index).each_with_object({}) do |i, hash|
