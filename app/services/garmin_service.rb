@@ -19,19 +19,7 @@ class GarminService
     searched_date = Time.at(@end_time).strftime("%Y-%m-%d")
 
     while @end_time < (Time.now + 1.day).to_i
-      query_params = {
-        "uploadStartTimeInSeconds" => @start_time,
-        "uploadEndTimeInSeconds" => @end_time
-      }
-
-      oauth_params = generate_oauth_params
-
-      signature = generate_oauth_signature("GET", @api_base_url, query_params, oauth_params)
-      oauth_params["oauth_signature"] = signature
-
-      authorization_header = build_authorization_header(oauth_params)
-
-      response = make_request(@api_base_url, query_params, authorization_header)
+      response = request_data(@start_time, @end_time)
 
       if response.empty? || !response.any? { |entry| entry["calendarDate"] == searched_date }
         @start_time += 86400
@@ -47,8 +35,15 @@ class GarminService
     .select { |entry| entry["calendarDate"] == searched_date && !entry["timeOffsetHeartRateSamples"].empty? }
     .max_by { |entry| entry["timeOffsetHeartRateSamples"].size }
 
+    next_day_result = request_data(@start_time + 86400, @end_time + 86400)
+    .select { |entry| entry["calendarDate"] == searched_date && !entry["timeOffsetHeartRateSamples"].empty? }
+    .max_by { |entry| entry["timeOffsetHeartRateSamples"].size }
+
     if result
-      calculate_interval_heart_rate(result, @time_interval_in_minutes)
+      calculate_interval_heart_rate(
+        !next_day_result && result["timeOffsetHeartRateSamples"].size >= next_day_result["timeOffsetHeartRateSamples"].size ? result : next_day_result,
+        @time_interval_in_minutes
+      )
     else
       []
     end
@@ -108,6 +103,22 @@ class GarminService
 
     def build_authorization_header(oauth_params)
       "OAuth " + oauth_params.map { |k, v| "#{CGI.escape(k.to_s)}=\"#{CGI.escape(v.to_s)}\"" }.join(", ")
+    end
+
+    def request_data(start_time, end_time)
+      query_params = {
+        "uploadStartTimeInSeconds" => start_time,
+        "uploadEndTimeInSeconds" => end_time
+      }
+
+      oauth_params = generate_oauth_params
+
+      signature = generate_oauth_signature("GET", @api_base_url, query_params, oauth_params)
+      oauth_params["oauth_signature"] = signature
+
+      authorization_header = build_authorization_header(oauth_params)
+
+      make_request(@api_base_url, query_params, authorization_header)
     end
 
     def make_request(base_url, query_params, authorization_header)
