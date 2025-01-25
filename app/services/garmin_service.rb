@@ -2,10 +2,18 @@
 
 class GarminService
   PATH_MAPPING = {
-    "heartRate" => "dailies"
+    "heartRate" => "dailies",
+    "spo2" => "pulseOx"
   }
+
+  DATA_COLUMN_NAME_MAPPING = {
+    "heartRate" => "timeOffsetHeartRateSamples",
+    "spo2" => "timeOffsetSpo2Values"
+  }
+
   def initialize(metric:, date:, time_interval_in_minutes:, token:, token_secret:)
     @api_base_url = "https://apis.garmin.com/wellness-api/rest/#{PATH_MAPPING[metric]}".freeze
+    @data_column_name = DATA_COLUMN_NAME_MAPPING[metric]
     @time_interval_in_minutes = time_interval_in_minutes
     @consumer_key = ENV["GARMIN_CONSUMER_KEY"]
     @consumer_secret = ENV["GARMIN_CONSUMER_SECRET"]
@@ -32,16 +40,21 @@ class GarminService
     return [] if response.empty?
 
     result = response
-    .select { |entry| entry["calendarDate"] == searched_date && !entry["timeOffsetHeartRateSamples"].empty? }
-    .max_by { |entry| entry["timeOffsetHeartRateSamples"].size }
+    .select { |entry| entry["calendarDate"] == searched_date && !entry[@data_column_name].empty? }
+    .max_by { |entry| entry[@data_column_name].size }
 
     next_day_result = request_data(@start_time + 86400, @end_time + 86400)
-    .select { |entry| entry["calendarDate"] == searched_date && !entry["timeOffsetHeartRateSamples"].empty? }
-    .max_by { |entry| entry["timeOffsetHeartRateSamples"].size }
+    .select { |entry| entry["calendarDate"] == searched_date && !entry[@data_column_name].empty? }
+    .max_by { |entry| entry[@data_column_name].size }
 
     if result
       calculate_interval_heart_rate(
-        !next_day_result && result["timeOffsetHeartRateSamples"].size >= next_day_result["timeOffsetHeartRateSamples"].size ? result : next_day_result,
+        next_day_result && result[@data_column_name].size <= next_day_result[@data_column_name].size ? next_day_result : result,
+        @time_interval_in_minutes
+      )
+    elsif next_day_result
+      calculate_interval_heart_rate(
+        next_day_result,
         @time_interval_in_minutes
       )
     else
@@ -52,11 +65,11 @@ class GarminService
   private
 
     def calculate_interval_heart_rate(data, interval)
-      return generate_empty_ranges(interval) if data["timeOffsetHeartRateSamples"].empty?
+      return generate_empty_ranges(interval) if data[@data_column_name].empty?
 
       interval_in_seconds = interval.to_i * 60
       sums = Hash.new { |h, k| h[k] = { sum: 0, count: 0 } }
-      data["timeOffsetHeartRateSamples"].each { |offset, rate| idx = offset.to_i / interval_in_seconds; sums[idx][:sum] += rate; sums[idx][:count] += 1 }
+      data[@data_column_name].each { |offset, rate| idx = offset.to_i / interval_in_seconds; sums[idx][:sum] += rate; sums[idx][:count] += 1 }
       max_index = (24 * 60) / interval.to_i - 1
 
       (0..max_index).each_with_object({}) do |i, hash|
