@@ -56,12 +56,12 @@ class GarminService
     .max_by { |entry| entry[@data_column_name].size }
 
     if result
-      calculate_interval_heart_rate(
+      create_interval(
         next_day_result && result[@data_column_name].size <= next_day_result[@data_column_name].size ? next_day_result : result,
         @time_interval_in_minutes
       )
     elsif next_day_result
-      calculate_interval_heart_rate(
+      create_interval(
         next_day_result,
         @time_interval_in_minutes
       )
@@ -72,7 +72,7 @@ class GarminService
 
   private
 
-    def calculate_interval_heart_rate(data, interval)
+    def create_interval(data, interval)
       return generate_empty_ranges(interval) if data[@data_column_name].empty?
 
       interval_in_seconds = interval.to_i * 60
