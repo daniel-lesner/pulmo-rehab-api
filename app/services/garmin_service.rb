@@ -2,6 +2,7 @@
 
 class GarminService
   PATH_MAPPING = {
+    "stats" => "dailies",
     "heartRate" => "dailies",
     "hrv" => "hrv",
     "spo2" => "pulseOx",
@@ -11,6 +12,7 @@ class GarminService
   }
 
   DATA_COLUMN_NAME_MAPPING = {
+    "stats" => "timeOffsetHeartRateSamples",
     "heartRate" => "timeOffsetHeartRateSamples",
     "hrv" => "hrvValues",
     "spo2" => "timeOffsetSpo2Values",
@@ -88,6 +90,10 @@ class GarminService
         end
 
         return result
+      end
+
+      if @metric == "stats"
+        return data.reject { |key, _| [ "summaryId", "calendarDate", "activityType", "startTimeInSeconds", "durationInSeconds", "startTimeOffsetInSeconds", "timeOffsetHeartRateSamples" ].include?(key) }
       end
 
       interval_in_seconds = interval.to_i * 60
