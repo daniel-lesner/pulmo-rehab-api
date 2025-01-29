@@ -20,6 +20,7 @@ class GarminService
   }
 
   def initialize(metric:, date:, time_interval_in_minutes:, token:, token_secret:)
+    @metric = metric
     @api_base_url = "https://apis.garmin.com/wellness-api/rest/#{PATH_MAPPING[metric]}".freeze
     @data_column_name = DATA_COLUMN_NAME_MAPPING[metric]
     @time_interval_in_minutes = time_interval_in_minutes
@@ -74,6 +75,20 @@ class GarminService
 
     def create_interval(data, interval)
       return generate_empty_ranges(interval) if data[@data_column_name].empty?
+
+      if @metric == "hrv"
+        start_time = Time.at(data["startTimeInSeconds"]).strftime("%H:%M")
+        result = {}
+        current_time = Time.parse(start_time)
+
+        data["hrvValues"].each do |offset, value|
+          label = current_time.strftime("%H:%M")
+          result[label] = value
+          current_time += 5 * 60
+        end
+
+        return result
+      end
 
       interval_in_seconds = interval.to_i * 60
       sums = Hash.new { |h, k| h[k] = { sum: 0, count: 0 } }
