@@ -8,7 +8,8 @@ class GarminService
     "spo2" => "pulseOx",
     "respiration" => "respiration",
     "stress" => "stressDetails",
-    "bodyBatteryLevel" => "stressDetails"
+    "bodyBatteryLevel" => "stressDetails",
+    "fitnessAge" => "userMetrics"
   }
 
   DATA_COLUMN_NAME_MAPPING = {
@@ -49,6 +50,15 @@ class GarminService
     end
 
     return [] if response.empty?
+
+    if @metric == "fitnessAge"
+      result = response
+      .select { |entry| entry["calendarDate"] == searched_date }
+
+      return {
+        "fitnessAge" => result[0]["fitnessAge"]
+      }
+    end
 
     result = response
     .select { |entry| entry["calendarDate"] == searched_date && !entry[@data_column_name].empty? }
