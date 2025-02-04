@@ -9,6 +9,7 @@ class GarminService
     "respiration" => "respiration",
     "stress" => "stressDetails",
     "bodyBatteryLevel" => "stressDetails",
+    "activities" => "moveiq",
     "fitnessAge" => "userMetrics"
   }
 
@@ -58,6 +59,16 @@ class GarminService
       return {
         "fitnessAge" => result[0]["fitnessAge"]
       }
+    end
+
+    if @metric == "activities"
+      result = response
+      .select { |entry| entry["calendarDate"] == searched_date }
+
+      next_day_result = request_data(@start_time + 86400, @end_time + 86400)
+      .select { |entry| entry["calendarDate"] == searched_date }
+
+      return result + next_day_result
     end
 
     result = response
