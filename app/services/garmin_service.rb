@@ -18,7 +18,6 @@ class GarminService
     "heartRate" => "timeOffsetHeartRateSamples",
     "hrv" => "hrvValues",
     "spo2" => "timeOffsetSpo2Values",
-    "respiration" => "timeOffsetEpochToBreaths",
     "stress" => "timeOffsetStressLevelValues",
     "bodyBatteryLevel" => "timeOffsetBodyBatteryValues"
   }
@@ -34,10 +33,64 @@ class GarminService
     @token_secret = token_secret
     @start_time = date - 86400
     @end_time = date
+    @searched_date = date
   end
 
   def call
     searched_date = Time.at(@end_time).strftime("%Y-%m-%d")
+
+    if @metric == "fitnessAge"
+      result = request_data(@start_time + 86400, @end_time + 86400)
+      .select { |entry| entry["calendarDate"] == searched_date }
+
+      next_day_result = request_data(@start_time + 86400 * 2, @end_time + 86400 * 2)
+      .select { |entry| entry["calendarDate"] == searched_date }
+
+      aggreggated_result = result + next_day_result
+
+      return [] if aggreggated_result.empty?
+
+      return {
+        "fitnessAge" => aggreggated_result[0]["fitnessAge"]
+      }
+    end
+
+    if @metric == "activities"
+      result = request_data(@start_time, @end_time)
+      .select { |entry| entry["calendarDate"] == searched_date }
+
+      next_day_result = request_data(@start_time + 86400, @end_time + 86400)
+      .select { |entry| entry["calendarDate"] == searched_date }
+
+      return result + next_day_result
+    end
+
+    if @metric == "respiration"
+      today_result = request_data(@start_time, @end_time).select do |entry|
+        entry["startTimeInSeconds"] > @searched_date && entry["startTimeInSeconds"] < @searched_date + 86400
+      end
+
+      next_day_result = request_data(@start_time + 86400, @end_time + 86400).select do |entry|
+        entry["startTimeInSeconds"] > @searched_date && entry["startTimeInSeconds"] < @searched_date + 86400
+      end
+
+
+      result = {}
+
+      aggreggated_result = today_result + next_day_result
+
+
+      aggreggated_result.each do |entry|
+        base_time = entry["startTimeInSeconds"] + entry["startTimeOffsetInSeconds"]
+
+        entry["timeOffsetEpochToBreaths"].each do |offset, breath_rate|
+          timestamp = Time.at(base_time + offset.to_i).utc.strftime("%H:%M")
+          result[timestamp] = breath_rate
+        end
+      end
+
+      return result
+    end
 
     while @end_time < (Time.now + 1.day).to_i
       response = request_data(@start_time, @end_time)
@@ -51,25 +104,6 @@ class GarminService
     end
 
     return [] if response.empty?
-
-    if @metric == "fitnessAge"
-      result = response
-      .select { |entry| entry["calendarDate"] == searched_date }
-
-      return {
-        "fitnessAge" => result[0]["fitnessAge"]
-      }
-    end
-
-    if @metric == "activities"
-      result = response
-      .select { |entry| entry["calendarDate"] == searched_date }
-
-      next_day_result = request_data(@start_time + 86400, @end_time + 86400)
-      .select { |entry| entry["calendarDate"] == searched_date }
-
-      return result + next_day_result
-    end
 
     result = response
     .select { |entry| entry["calendarDate"] == searched_date && !entry[@data_column_name].empty? }
