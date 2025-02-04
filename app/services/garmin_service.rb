@@ -159,7 +159,7 @@ class GarminService
       end
 
       if @metric == "stats"
-        return data.reject { |key, _| [ "summaryId", "calendarDate", "activityType", "startTimeInSeconds", "durationInSeconds", "startTimeOffsetInSeconds", "timeOffsetHeartRateSamples" ].include?(key) }
+        return data.reject { |key, _| [ "summaryId", "calendarDate", "activityType", "timeOffsetHeartRateSamples" ].include?(key) }
       end
 
       interval_in_seconds = interval.to_i * 60
