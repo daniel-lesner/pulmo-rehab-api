@@ -10,6 +10,7 @@ class GarminService
     "stress" => "stressDetails",
     "bodyBatteryLevel" => "stressDetails",
     "activities" => "moveiq",
+    "epochs" => "epochs",
     "fitnessAge" => "userMetrics"
   }
 
@@ -65,6 +66,18 @@ class GarminService
       return result + next_day_result
     end
 
+    if @metric == "epochs"
+      result = request_data(@start_time, @end_time).select do |entry|
+        entry["startTimeInSeconds"] > @searched_date && entry["startTimeInSeconds"] < @searched_date + 86400
+      end
+
+      next_day_result = request_data(@start_time + 86400, @end_time + 86400).select do |entry|
+        entry["startTimeInSeconds"] > @searched_date && entry["startTimeInSeconds"] < @searched_date + 86400
+      end
+
+      return result + next_day_result
+    end
+
     if @metric == "respiration"
       today_result = request_data(@start_time, @end_time).select do |entry|
         entry["startTimeInSeconds"] > @searched_date && entry["startTimeInSeconds"] < @searched_date + 86400
@@ -74,11 +87,9 @@ class GarminService
         entry["startTimeInSeconds"] > @searched_date && entry["startTimeInSeconds"] < @searched_date + 86400
       end
 
-
       result = {}
 
       aggreggated_result = today_result + next_day_result
-
 
       aggreggated_result.each do |entry|
         base_time = entry["startTimeInSeconds"] + entry["startTimeOffsetInSeconds"]
