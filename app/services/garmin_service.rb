@@ -11,7 +11,8 @@ class GarminService
     "bodyBatteryLevel" => "stressDetails",
     "activities" => "moveiq",
     "epochs" => "epochs",
-    "fitnessAge" => "userMetrics"
+    "fitnessAge" => "userMetrics",
+    "sleep" => "sleeps"
   }
 
   DATA_COLUMN_NAME_MAPPING = {
@@ -56,14 +57,42 @@ class GarminService
       }
     end
 
-    if @metric == "activities"
+    if [ "activities", "sleep" ].include?(@metric)
       result = request_data(@start_time, @end_time)
       .select { |entry| entry["calendarDate"] == searched_date }
 
       next_day_result = request_data(@start_time + 86400, @end_time + 86400)
       .select { |entry| entry["calendarDate"] == searched_date }
 
-      return result + next_day_result
+      aggreggated_result = result + next_day_result
+
+      if @metric == "sleep"
+        aggreggated_result = aggreggated_result[0]
+
+        start_time = aggreggated_result["startTimeInSeconds"] + aggreggated_result["startTimeOffsetInSeconds"]
+
+        def convert_to_time_format(base_time, offset_seconds)
+          time = Time.at(base_time + offset_seconds).utc.strftime("%H:%M")
+          time
+        end
+
+        updated_spo2 = {}
+        aggreggated_result["timeOffsetSleepSpo2"].each do |key, value|
+          time_key = convert_to_time_format(start_time, key.to_i)
+          updated_spo2[time_key] = value
+        end
+
+        updated_respiration = {}
+        aggreggated_result["timeOffsetSleepRespiration"].each do |key, value|
+          time_key = convert_to_time_format(start_time, key.to_i)
+          updated_respiration[time_key] = value
+        end
+
+        aggreggated_result["timeOffsetSleepSpo2"] = updated_spo2
+        aggreggated_result["timeOffsetSleepRespiration"] = updated_respiration
+      end
+
+      return aggreggated_result
     end
 
     if @metric == "epochs"
