@@ -9,7 +9,8 @@ class GarminService
     "respiration" => "respiration",
     "stress" => "stressDetails",
     "bodyBatteryLevel" => "stressDetails",
-    "activities" => "moveiq",
+    "activities" => "activities",
+    "moveiq" => "moveiq",
     "epochs" => "epochs",
     "fitnessAge" => "userMetrics",
     "sleep" => "sleeps"
@@ -57,7 +58,7 @@ class GarminService
       }
     end
 
-    if [ "activities", "sleep" ].include?(@metric)
+    if [ "moveiq", "sleep" ].include?(@metric)
       result = request_data(@start_time, @end_time)
       .select { |entry| entry["calendarDate"] == searched_date }
 
@@ -95,7 +96,7 @@ class GarminService
       return aggreggated_result
     end
 
-    if @metric == "epochs"
+    if [ "epochs", "activities" ].include?(@metric)
       result = request_data(@start_time, @end_time).select do |entry|
         entry["startTimeInSeconds"] > @searched_date && entry["startTimeInSeconds"] < @searched_date + 86400
       end
