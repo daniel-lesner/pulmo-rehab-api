@@ -15,13 +15,26 @@ module V1
 
       searched_date = Time.utc(*date.split("-").map(&:to_i)).to_i
 
-      service = GarminService.new(
-        metric: data_type,
-        date: searched_date,
-        time_interval_in_minutes: time_interval_in_minutes,
-        token: bracelet.token,
-        token_secret: bracelet.token_secret,
-      )
+      service = case bracelet.brand
+      when "Fitbit"
+        FitbitService.new(
+          metric: data_type,
+          date: searched_date,
+          access_token: bracelet.token,
+          refresh_token: bracelet.token_secret,
+          bracelet_id: bracelet.id
+        )
+      when "Garmin"
+        GarminService.new(
+          metric: data_type,
+          date: searched_date,
+          time_interval_in_minutes: time_interval_in_minutes,
+          token: bracelet.token,
+          token_secret: bracelet.token_secret
+        )
+      else
+        raise "Unsupported bracelet type: #{bracelet.type}"
+      end
 
       response = service.call
 
