@@ -53,7 +53,7 @@ class ApplicationController < ActionController::Base
     end
 
     def get_model_from_request
-      request.params[:controller].split("/").map(&:capitalize).map(&:singularize).join("::").constantize
+      request.params[:controller].split("/").map { |p| p.camelize.singularize }.join("::").constantize
     end
 
     def not_authorized_error

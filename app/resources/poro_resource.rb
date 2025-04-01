@@ -2,7 +2,7 @@
 
 # For version 0.10.X of the jsonapi-resources gem, support for models not backed up by table is currently broken
 # In order to make it work, models should not inherit from ActiveRecord and the corresponding resources should use JSONAPI::BasicResources,
-# as well as some overrides of it's methods are needed
+# as well as some overrides of its methods are needed
 #
 # https://github.com/cerebris/jsonapi-resources/issues/1306
 # https://github.com/cerebris/jsonapi-resources-site/issues/45
@@ -50,17 +50,17 @@ class PoroResource < JSONAPI::BasicResource
     end
 
     def resource_klass_for(type)
-      type = type.split("::").last.gsub("Resource", "").downcase
-      type_with_module = type.start_with?(module_path) ? type : module_path + type
+      # type = type.split("::").last.gsub("Resource", "").downcase
+      # type_with_module = type.start_with?(module_path) ? type : module_path + type
 
-      resource_name = _resource_name_from_type(type_with_module)
-      resource = resource_name.safe_constantize if resource_name
+      # resource_name = _resource_name_from_type(type_with_module)
+      # resource = resource_name.safe_constantize if resource_name
 
-      if resource.nil?
-        fail NameError, "JSONAPI: Could not find resource '#{type}'. (Class #{resource_name} not found)"
-      end
+      # if resource.nil?
+      #   fail NameError, "JSONAPI: Could not find resource '#{type}'. (Class #{resource_name} not found)"
+      # end
 
-      resource
+      type.safe_constantize
     end
   end
 end
