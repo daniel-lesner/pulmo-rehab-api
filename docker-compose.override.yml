@@ -1,0 +1,32 @@
+# docker-compose.override.yml
+# Development-specific overrides
+
+services:
+  app:
+    # Override build settings for development
+    build:
+      context: .
+      dockerfile: Dockerfile # Use the same Dockerfile
+      target: development # Build up to a 'development' stage (defined below)
+      args: # Pass build args
+        RAILS_ENV: development
+        BUNDLE_WITHOUT: "production:test" # Install dev gems, exclude others
+
+    # Ensure the entrypoint runs, then the default command (rails server)
+    # The command is already set in the base docker-compose.yml, but overriding
+    # the build target might require ensuring CMD is still correct if entrypoint changes.
+    # If your entrypoint script handles the CMD logic, this might not be needed.
+    # command: ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"] # Default CMD if needed
+
+    environment:
+      RAILS_ENV: development # Ensure development env
+      BUNDLE_WITHOUT: "" # Ensure runtime matches gems installed
+      # Keep other env vars from base docker-compose.yml
+
+    volumes:
+      # Keep existing volumes for code mounting and bundle cache
+      - .:/rails:cached
+      - bundle_cache:/usr/local/bundle # Reuse bundle cache if possible
+      # Add any other development-specific volumes
+
+    # No depends_on override needed, it's inherited from base compose file
