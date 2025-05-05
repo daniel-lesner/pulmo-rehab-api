@@ -1,39 +1,13 @@
-#!/bin/bash
-set -e # Exit immediately if a command exits with a non-zero status.
+#!/bin/bash -e
 
-# Remove a potentially pre-existing server.pid for Rails.
-rm -f /rails/tmp/pids/server.pid
-
-# Check if the database is ready
-echo "Waiting for database host ${DATABASE_HOST:-db}..."
-while ! nc -z "${DATABASE_HOST:-db}" 5432; do
-  echo "Database unavailable - sleeping"
-  sleep 2
-done
-echo "Database is up!"
-
-# --- DIAGNOSTICS ---
-echo "--------------------------------------------------"
-echo "Checking environment before db:prepare:"
-echo "RAILS_ENV=[${RAILS_ENV}]"
-echo "DATABASE_NAME=[${DATABASE_NAME}]"
-echo "DATABASE_HOST=[${DATABASE_HOST}]"
-echo "DATABASE_USER=[${DATABASE_USER}]"
-echo "--------------------------------------------------"
-# --- END DIAGNOSTICS ---
-
-# Run database setup tasks.
-# Check RAILS_ENV directly here too just in case
-if [ "$RAILS_ENV" = "development" ] || [ "$RAILS_ENV" = "production" ]; then
-  echo "Running database preparations (db:prepare) for RAILS_ENV=${RAILS_ENV}..."
-  bundle exec rails db:prepare
-  # If you also need seed data:
-  # echo "Running database seeding (db:seed)..."
-  # bundle exec rails db:seed
-else
-  echo "Skipping db:prepare because RAILS_ENV is not development or production (RAILS_ENV=[${RAILS_ENV}])"
+# Enable jemalloc for reduced memory usage and latency.
+if [ -z "${LD_PRELOAD+x}" ] && [ -f /usr/lib/*/libjemalloc.so.2 ]; then
+  export LD_PRELOAD="$(echo /usr/lib/*/libjemalloc.so.2)"
 fi
 
-# Then exec the container's main process
-echo "Executing command: $@"
-exec "$@"
+# If running the rails server then create or migrate existing database
+if [ "${1}" == "./bin/rails" ] && [ "${2}" == "server" ]; then
+  ./bin/rails db:prepare
+fi
+
+exec "${@}"
