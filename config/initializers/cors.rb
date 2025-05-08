@@ -7,7 +7,7 @@
 
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins "https://pulmo-rehab.com"
+    origins ENV.fetch("CORS_ORIGINS") { "https://pulmo-rehab.com" }
 
     resource "*",
       headers: :any,
