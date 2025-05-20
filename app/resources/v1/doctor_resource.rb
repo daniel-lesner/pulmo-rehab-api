@@ -9,7 +9,7 @@ module V1
     has_many :users
 
     def fetchable_fields
-      super - [ :password ]
+      super - [ :password, :password_token, :password_token_expires_at ]
     end
   end
 end
