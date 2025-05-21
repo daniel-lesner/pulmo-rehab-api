@@ -12,23 +12,31 @@ module V1
 
     def save
       api_key = ENV["OPENWEATHERMAP_API_KEY"]
-      uri = URI("http://api.openweathermap.org/data/2.5/air_pollution?lat=#{lat}&lon=#{lon}&appid=#{api_key}")
+      end_time = Time.now
+      start_time = end_time - 24.hours
+
+      uri = URI("http://api.openweathermap.org/data/2.5/air_pollution/history?lat=#{lat}&lon=#{lon}&start=#{start_time.to_i}&end=#{end_time.to_i}&appid=#{api_key}")
 
       response = Net::HTTP.get(uri)
       result = JSON.parse(response)
 
-      components = result.dig("list", 0, "components")
-      timestamp = result.dig("list", 0, "dt")
+      components = result["list"] || []
 
-      @model.co     = components["co"]
-      @model.no     = components["no"]
-      @model.no2    = components["no2"]
-      @model.o3     = components["o3"]
-      @model.so2    = components["so2"]
-      @model.pm2_5  = components["pm2_5"]
-      @model.pm10   = components["pm10"]
-      @model.nh3    = components["nh3"]
-      @model.dt     = timestamp
+      peak = components.each_with_object({}) do |item, memo|
+        item["components"].each do |key, value|
+          memo[key] = [ memo[key] || 0, value ].max
+        end
+      end
+
+      @model.co = peak["co"]
+      @model.no = peak["no"]
+      @model.no2 = peak["no2"]
+      @model.o3 = peak["o3"]
+      @model.so2 = peak["so2"]
+      @model.pm2_5 = peak["pm2_5"]
+      @model.pm10 = peak["pm10"]
+      @model.nh3 = peak["nh3"]
+      @model.dt = end_time.to_i
 
       context[:created_model] = @model
     end
