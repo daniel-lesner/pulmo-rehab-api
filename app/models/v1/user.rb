@@ -3,7 +3,7 @@
 module V1
   class User < ApplicationRecord
     has_many :bracelets, dependent: :destroy
-    has_one :doctors
+    has_one :doctor
 
     validates :name, presence: true
     validates :email, presence: true, uniqueness: true
