@@ -6,6 +6,8 @@ module JSONAPI
       unless @model.valid?
         raise ActiveRecord::RecordInvalid.new(@model)
       end
+
+      super
     end
   end
 end
