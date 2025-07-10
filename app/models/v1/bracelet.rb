@@ -5,8 +5,8 @@ module V1
     belongs_to :user
 
     validates :name, :brand, :token, :token_secret, presence: true
-    # validates :token, uniqueness: true
-    # validates :brand, inclusion: { in: [ :garmin, :xiaomi, :huawei ] }
+    validates :token, uniqueness: true
+    validates :brand, inclusion: { in: [ :garmin, :xiaomi, :huawei ] }
 
     before_save :set_token_and_token_secret, if: -> { brand == "Fitbit" && new_record? }
 

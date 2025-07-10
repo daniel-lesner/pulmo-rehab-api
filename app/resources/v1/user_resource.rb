@@ -21,5 +21,9 @@ module V1
     def fetchable_fields
       super - [ :password, :password_token, :password_token_expires_at ]
     end
+
+    def updatable_fields
+      super - [ :password, :password_token, :password_token_expires_at ]
+    end
   end
 end

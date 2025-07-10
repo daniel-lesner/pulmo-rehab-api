@@ -7,7 +7,8 @@ module V1
 
     validates :name, presence: true
     validates :email, presence: true, uniqueness: true
-    validates :password, presence: true
+    validates :password, presence: true, length: { minimum: 8 }, if: :password_required?
+    validate :password_complexity, if: :password_required?
 
     before_create :set_password_token
 
@@ -20,6 +21,18 @@ module V1
 
       def generate_password_token
         SecureRandom.hex(16)
+      end
+
+      def password_complexity
+        return if password.blank?
+
+        unless password =~ /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])/
+          errors.add :password, "must include at least one lowercase letter, one uppercase letter, one digit, and one special character"
+        end
+      end
+
+      def password_required?
+        new_record? || (password.present? && password_changed?)
       end
   end
 end
