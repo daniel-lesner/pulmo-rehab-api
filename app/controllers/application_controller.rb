@@ -12,6 +12,7 @@ class ApplicationController < ActionController::Base
 
   rescue_from Pundit::NotAuthorizedError, with: :forbidden_error
   rescue_from ActiveRecord::RecordNotFound, with: :not_found_error
+  rescue_from ActiveRecord::RecordInvalid, with: :invalid_record_error
 
   def context
     { current_user: current_user }
@@ -21,7 +22,7 @@ class ApplicationController < ActionController::Base
     record = get_model_from_request.find(request.params[:id])
     authorize(record)
     super
-  end
+end
 
   def create
     authorize(get_model_from_request)
@@ -38,14 +39,8 @@ class ApplicationController < ActionController::Base
 
     def authenticate_user
       token = request.headers["Authorization"]&.split(" ")&.last
-
       user = V1::User.find_by(password_token: token) || V1::Doctor.find_by(password_token: token)
-
-      if user
-        @current_user = user
-      else
-        not_authorized_error
-      end
+      user ? @current_user = user : not_authorized_error
     end
 
     def current_user
@@ -56,50 +51,49 @@ class ApplicationController < ActionController::Base
       request.params[:controller].split("/").map { |p| p.camelize.singularize }.join("::").constantize
     end
 
-    def not_authorized_error
-      body = {
-          errors: [
-            {
-              status: "401",
-              code: "401",
-              title: "Unauthorized",
-              detail: "You need to be authenticated to perform this operation"
-            }
-          ]
-        }
-
-      render(json: body, status: :unauthorized)
+    def not_found_error
+      render json: {
+        errors: [ {
+          status: "404",
+          title: "Record not found",
+          detail: "No record found for ID #{params[:id]}"
+        } ]
+      }, status: :not_found
     end
 
     def forbidden_error
-      body = {
-        errors: [
-          {
-            status: "403",
-            code: "403",
-            title: "Forbidden",
-            detail: "You don't have appropriate permissions to perform this operation"
-          }
-        ]
-      }
-
-      render(json: body, status: :forbidden)
+      render json: {
+        errors: [ {
+          status: "403",
+          title: "Forbidden",
+          detail: "You are not authorized to perform this action."
+        } ]
+      }, status: :forbidden
     end
 
-    def not_found_error
-      id = request.parameters[:id]
+    def not_authorized_error
+      render json: {
+        errors: [ {
+          status: "401",
+          title: "Unauthorized",
+          detail: "You must be logged in."
+        } ]
+      }, status: :unauthorized
+    end
 
-      body = {
-        errors: [
-          {
-            status: "404",
-            code: "404",
-            title: "Record not found",
-            details: "The record identified by #{id} could not be found."
-          }
-        ]
-      }
+    def invalid_record_error(exception)
+      record = exception.record
 
-      render(json: body, status: :not_found)
+      errors = record.errors.map do |error|
+        {
+          status: "422",
+          code: "validation_error",
+          title: "Invalid Attribute",
+          detail: error.full_message,
+          source: { pointer: "/data/attributes/#{error.attribute}" }
+        }
+      end
+
+      render json: { errors: errors }, status: :unprocessable_entity
     end
 end
