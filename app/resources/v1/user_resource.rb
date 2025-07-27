@@ -7,6 +7,7 @@ module V1
     attributes :name, :email, :password, :password_token, :password_token_expires_at, :doctor_id
 
     has_many :bracelets
+    has_one :health_datum
 
     relationship :doctor, to: :one, class_name: "Doctor"
 
@@ -19,7 +20,7 @@ module V1
     }
 
     def fetchable_fields
-      super - [ :password, :password_token, :password_token_expires_at ]
+      super - [ :password, :password_token_expires_at ]
     end
 
     def updatable_fields
