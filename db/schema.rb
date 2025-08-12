@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_12_25_104144) do
+ActiveRecord::Schema[7.2].define(version: 2025_07_10_182418) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -36,6 +36,35 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_25_104144) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "health_data", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.integer "age"
+    t.string "gender"
+    t.integer "weight"
+    t.integer "height"
+    t.boolean "smoker"
+    t.string "primary_diagnosis"
+    t.string "copd_stage"
+    t.boolean "respiratory_failure"
+    t.string "angina"
+    t.string "hypertension"
+    t.boolean "venous_insufficiency"
+    t.integer "spo2"
+    t.string "bp"
+    t.integer "heart_rate"
+    t.float "fev1"
+    t.float "ipb"
+    t.float "fvc"
+    t.string "biseptol"
+    t.boolean "laba_lama"
+    t.boolean "ics"
+    t.string "acc"
+    t.string "ventolin"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_health_data_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "name"
     t.string "email"
@@ -45,10 +74,10 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_25_104144) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "doctor_id"
-    t.string "api_key"
     t.index ["doctor_id"], name: "index_users_on_doctor_id"
   end
 
   add_foreign_key "bracelets", "users"
+  add_foreign_key "health_data", "users"
   add_foreign_key "users", "doctors"
 end

@@ -1,0 +1,51 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  age: 1
+  gender: MyString
+  weight: 1
+  bmi: 1
+  smoker: false
+  primary_diagnosis: MyString
+  copd_stage: MyString
+  respiratory_failure: false
+  angina: MyString
+  hypertension: MyString
+  venous_insufficiency: false
+  spo2: 1
+  bp: MyString
+  heart_rate: 1
+  fev1: 1.5
+  ipb: 1.5
+  fvc: 1.5
+  biseptol: MyString
+  laba_lama: false
+  ics: false
+  acc: MyString
+  ventolin: MyString
+
+two:
+  user: two
+  age: 1
+  gender: MyString
+  weight: 1
+  bmi: 1
+  smoker: false
+  primary_diagnosis: MyString
+  copd_stage: MyString
+  respiratory_failure: false
+  angina: MyString
+  hypertension: MyString
+  venous_insufficiency: false
+  spo2: 1
+  bp: MyString
+  heart_rate: 1
+  fev1: 1.5
+  ipb: 1.5
+  fvc: 1.5
+  biseptol: MyString
+  laba_lama: false
+  ics: false
+  acc: MyString
+  ventolin: MyString
