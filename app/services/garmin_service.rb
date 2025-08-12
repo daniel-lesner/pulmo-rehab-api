@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class GarminService
+  EPOCHS_SEDENTARY_ALLOWED_GAPS = [ 15, 900 ].freeze
+
   PATH_MAPPING = {
     "stats" => "dailies",
     "heartRate" => "dailies",
@@ -107,7 +109,7 @@ class GarminService
         entry["startTimeInSeconds"] > @searched_date && entry["startTimeInSeconds"] < @searched_date + 86400
       end
 
-      return result + next_day_result
+      return aggreggate_sedentary_epochs(result + next_day_result)
     end
 
     if @metric == "respiration"
@@ -288,5 +290,59 @@ class GarminService
       else
         { error: "HTTP #{response.code}", message: response.message, body: response.body }
       end
+    end
+
+    def aggreggate_sedentary_epochs(response)
+      merged = response.sort_by { |e| e["startTimeInSeconds"] }
+
+      compressed = []
+      current_group = nil
+      sum_active_time = 0
+      sum_duration = 0
+
+      flush_group = lambda do
+        if current_group
+          current_group["activeTimeInSeconds"] = sum_active_time
+          current_group["durationInSeconds"]  = sum_duration
+          compressed << current_group
+        end
+        current_group = nil
+        sum_active_time = 0
+        sum_duration = 0
+      end
+
+      prev_sedentary_start = nil
+
+      merged.each do |entry|
+        if entry["activityType"] == "SEDENTARY"
+          if current_group.nil?
+            current_group = entry.dup
+            sum_active_time = entry["activeTimeInSeconds"].to_i
+            sum_duration    = entry["durationInSeconds"].to_i
+            prev_sedentary_start = entry["startTimeInSeconds"].to_i
+          else
+            gap = entry["startTimeInSeconds"].to_i - prev_sedentary_start
+
+            if EPOCHS_SEDENTARY_ALLOWED_GAPS.include?(gap)
+              sum_active_time += entry["activeTimeInSeconds"].to_i
+              sum_duration    += entry["durationInSeconds"].to_i
+              prev_sedentary_start = entry["startTimeInSeconds"].to_i
+            else
+              flush_group.call
+              current_group = entry.dup
+              sum_active_time = entry["activeTimeInSeconds"].to_i
+              sum_duration    = entry["durationInSeconds"].to_i
+              prev_sedentary_start = entry["startTimeInSeconds"].to_i
+            end
+          end
+        else
+          flush_group.call
+          compressed << entry
+        end
+      end
+
+      flush_group.call
+
+      compressed
     end
 end
