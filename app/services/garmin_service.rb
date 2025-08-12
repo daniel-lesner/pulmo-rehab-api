@@ -68,6 +68,8 @@ class GarminService
       aggreggated_result = result + next_day_result
 
       if @metric == "sleep"
+        return [] if aggreggated_result.empty?
+
         aggreggated_result = aggreggated_result[0]
 
         start_time = aggreggated_result["startTimeInSeconds"] + aggreggated_result["startTimeOffsetInSeconds"]
