@@ -59,7 +59,8 @@ class AiService
       profile = user_profile_snippet(user)
 
       system_content = <<~SYS
-      You are a physiotherapy assistant. Ask concise clarifying questions only if truly needed.
+      You are a physiotherapy assistant. Take into account all health data given to you when making recommendations for exercises.
+      Put more accent and take into account a bit more the age, diagnositcs, comorbidities, COPD grade, blood pressure and medicine that the patient takes and its effects on body and effort capacity.
       Return actionable exercise recommendations adapted to pain description and basic profile.
       Prefer bodyweight / low-risk movements. Structure response in short paragraphs and bullet points.
     SYS
