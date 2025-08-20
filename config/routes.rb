@@ -14,8 +14,9 @@ Rails.application.routes.draw do
     jsonapi_resources :doctors, only: [ :create, :show ]
     jsonapi_resources :bracelets, only: [ :create, :show, :index, :destroy ]
     jsonapi_resources :dashboards, only: [ :create ]
-    jsonapi_resources :air_pollutions, only: [ :create ]
     jsonapi_resources :ai_messages, only: [ :create ]
+    jsonapi_resources :air_pollutions, only: [ :create ]
+    jsonapi_resources :local_air_pollutions,     only: [ :create ]
     jsonapi_resources :health_data, only: [ :create, :show, :index, :update, :destroy ]
 
     post "webhooks/garmin", to: "webhooks#garmin"
