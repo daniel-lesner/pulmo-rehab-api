@@ -1,11 +1,6 @@
 # frozen_string_literal: true
 
-require "net/http"
-require "json"
-require "openssl"
-require "securerandom"
-
-class TuyaAirPollution
+class TuyaAirPollutionService
   class Error < StandardError; end
 
   HOST      = ENV.fetch("TUYA_HOST", "https://openapi.tuyaeu.com")

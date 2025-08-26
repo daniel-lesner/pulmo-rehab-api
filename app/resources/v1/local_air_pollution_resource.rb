@@ -14,7 +14,7 @@ module V1
       device_id = @model.device_id.presence || ENV["TUYA_DEFAULT_DEVICE_ID"]
       raise "Missing device_id" unless device_id
 
-      status_list = TuyaAirPollution.new.device_status(device_id)
+      status_list = TuyaAirPollutionService.new.device_status(device_id)
       lookup = status_list.to_h { |h| [ h["code"], h ] }
 
       get = ->(code) { lookup.dig(code, "value") }
